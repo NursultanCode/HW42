@@ -56,13 +56,12 @@ public class ServerActions {
     }
 
     private static void sendResponseToUsers(String response, Map<String, Socket> users, String socketName) throws IOException {
-        for (Socket a:users.values()
-             ) {
-            PrintWriter writer = getWriter(a);
-            if (!socketName.equals("user"+a.getPort())){
+        for (Map.Entry<String, Socket> entry : users.entrySet()) {
+            PrintWriter writer = getWriter(entry.getValue());
+            if (entry.getKey().equals(socketName)){
+                writer.write("Your text: "+response);
+            }else{
                 writer.write(socketName+": "+response);
-            }else {
-                writer.write("You send: "+response);
             }
             writer.write(System.lineSeparator());
             writer.flush();
