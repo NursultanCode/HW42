@@ -20,7 +20,7 @@ public class ServerActions {
                     users.remove(socketName);
                     break;
                 }
-                sendResponseToUsers(message.toUpperCase(), users, socketName);
+                sendResponseToUsers(message, users, socketName);
             }
         }catch (NoSuchElementException ex){
             System.out.println("client closed connection");
