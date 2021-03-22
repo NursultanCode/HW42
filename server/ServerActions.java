@@ -1,23 +1,26 @@
 package server;
 import java.io.*;
 import java.net.Socket;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class ServerActions {
-
-    static void handle(Socket socket) throws IOException {
-        System.out.printf("Connected to client: %s%n", socket);
+    static void handle(Socket socket, Map<String, Socket> users) throws IOException {
+        String socketName = "user"+socket.getPort();
+        System.out.printf("Connected to client: %s%n", socketName);
+        users.put(socketName, socket);
         try(socket;
             Scanner reader = getReader(socket);
             PrintWriter writer = getWriter(socket)){
-            sendResponse("Hi "+socket, writer);
+            sendResponse("Hi "+socketName, writer);
             while (true){
                 String message = reader.nextLine();
                 if (isEmptyMsg(message)||isQuiteMsg(message)){
+                    users.remove(socketName);
                     break;
                 }
-                sendResponse(message.toUpperCase(), writer);
+                sendResponseToUsers(message.toUpperCase(), users, socketName);
             }
         }catch (NoSuchElementException ex){
             System.out.println("client closed connection");
@@ -50,5 +53,19 @@ public class ServerActions {
         writer.write(response);
         writer.write(System.lineSeparator());
         writer.flush();
+    }
+
+    private static void sendResponseToUsers(String response, Map<String, Socket> users, String socketName) throws IOException {
+        for (Socket a:users.values()
+             ) {
+            PrintWriter writer = getWriter(a);
+            if (!socketName.equals("user"+a.getPort())){
+                writer.write(socketName+": "+response);
+            }else {
+                writer.write("You send: "+response);
+            }
+            writer.write(System.lineSeparator());
+            writer.flush();
+        }
     }
 }
